@@ -126,12 +126,12 @@ public class SquidGame extends Applet implements ActionListener {
             gameStarted = false;
             stepCounter = 600;
             player.setBounds(100, stepCounter, 45, 45);
-            remove(restartButton);
-            remove(exitButton);
             remove(player);
             remove(lineLabel);
             remove(forwardButton);
             remove(lightLabel);
+            restartButton.setVisible(false);
+            exitButton.setVisible(false);
             startButton.setVisible(true);
             repaint();
         } else if (e.getSource() == exitButton) {
