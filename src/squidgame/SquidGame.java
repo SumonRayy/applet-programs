@@ -1,22 +1,20 @@
 package squidgame;
 
-// Imports
 import java.applet.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-// Class: SquidGame extends Applet implements ActionListener
 @SuppressWarnings({ "deprecation" })
-public class SquidGame extends Applet implements ActionListener {
+public class SquidGame extends Applet implements ActionListener, Runnable {
 
     Label player, lineLabel, lightLabel;
-    Image fgBgPic, winBoxPic, bgPicture;
-    AudioClip dollSound, bgSound;
+    Image fgBgPic, winBoxPic, loseBoxPic, bgPicture;
+    AudioClip dollSound, gunSound, bgSound;
     Button forwardButton, startButton, exitButton, restartButton;
 
-    int stepCounter = 600;
-    Boolean gameOver = false, gameStarted = false, lightColorRed = false;
+    int stepCounter = 600, lightCounter = 0;
+    Boolean gameOver = false, gameStarted = false, lightColorRedFlag = true;
     String playerName = "456", red = "RedLight", green = "GreenLight";
     Random rand = new Random();
     String now = "";
@@ -33,12 +31,14 @@ public class SquidGame extends Applet implements ActionListener {
 
         fgBgPic = getImage(getDocumentBase(), "assets/images/fg_bg.jpg");
         winBoxPic = getImage(getDocumentBase(), "assets/images/winBox.jpg");
+        loseBoxPic = getImage(getDocumentBase(), "assets/images/loseBox.jpg");
         bgPicture = getImage(getDocumentBase(), "assets/images/sg.jpg");
         dollSound = getAudioClip(getDocumentBase(), "assets/sounds/doll.wav");
+        gunSound = getAudioClip(getDocumentBase(), "assets/sounds/gun.wav");
         bgSound = getAudioClip(getDocumentBase(), "assets/sounds/sg_theme.wav");
 
         player = new Label(playerName, Label.CENTER);
-        lightLabel = new Label(green, Label.CENTER);
+        lightLabel = new Label(red, Label.CENTER);
         lineLabel = new Label("");
 
         forwardButton = new Button("Forward");
@@ -51,9 +51,9 @@ public class SquidGame extends Applet implements ActionListener {
         startButton.setFont(btnFont);
         startButton.setBounds(250, 550, 280, 60);
         restartButton.setFont(btnFont);
-        restartButton.setBounds(250, 500, 280, 60);
+        restartButton.setBounds(250, 520, 280, 60);
         exitButton.setFont(btnFont);
-        exitButton.setBounds(250, 600, 280, 60);
+        exitButton.setBounds(250, 620, 280, 60);
 
         player.setFont(playerFont);
         player.setBackground(playerColor);
@@ -63,7 +63,7 @@ public class SquidGame extends Applet implements ActionListener {
         lineLabel.setBackground(Color.WHITE);
         lineLabel.setBounds(35, 250, 650, 2);
 
-        lightLabel.setBackground(greenLight);
+        lightLabel.setBackground(redLight);
         lightLabel.setFont(lightFont);
         lightLabel.setForeground(Color.WHITE);
         lightLabel.setBounds(450, 170, 200, 60);
@@ -82,10 +82,21 @@ public class SquidGame extends Applet implements ActionListener {
 
     public void paint(Graphics g) {
         if (gameOver) {
-            g.drawImage(fgBgPic, 10, 10, this);
-            g.drawImage(winBoxPic, 60, 300, this);
-            restartButton.setVisible(true);
-            exitButton.setVisible(true);
+            if (stepCounter > 200) {
+                remove(player);
+                gunSound.play();
+                g.drawImage(fgBgPic, 10, 10, this);
+                g.drawImage(loseBoxPic, 60, 300, this);
+                restartButton.setVisible(true);
+                exitButton.setVisible(false);
+            } else {
+                dollSound.stop();
+                bgSound.play();
+                g.drawImage(fgBgPic, 10, 10, this);
+                g.drawImage(winBoxPic, 60, 300, this);
+                restartButton.setVisible(true);
+                exitButton.setVisible(true);
+            }
         } else {
             if (gameStarted == false) {
                 bgSound.loop();
@@ -97,6 +108,37 @@ public class SquidGame extends Applet implements ActionListener {
                 g.drawImage(fgBgPic, 10, 10, this);
                 restartButton.setVisible(false);
                 exitButton.setVisible(false);
+            }
+        }
+    }
+
+    public void start() {
+        Thread th = new Thread(this);
+        th.start();
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(4670);
+                if (!gameStarted || gameOver) {
+                    continue;
+                }
+                if (lightColorRedFlag) {
+                    dollSound.stop();
+                    lightLabel.setText(red);
+                    lightLabel.setBackground(redLight);
+                    lightColorRedFlag = false;
+                } else {
+                    dollSound.play();
+                    lightLabel.setText(green);
+                    lightLabel.setBackground(greenLight);
+                    lightColorRedFlag = true;
+                }
+                repaint();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -114,11 +156,19 @@ public class SquidGame extends Applet implements ActionListener {
         } else if (e.getSource() == forwardButton) {
             if (stepCounter <= 201) {
                 gameOver = true;
-                repaint();
                 remove(forwardButton);
+                repaint();
             } else {
-                stepCounter -= 10;
-                player.setBounds(100, stepCounter, 45, 45);
+                if (!lightColorRedFlag) {
+                    stepCounter -= 10;
+                    player.setBounds(100, stepCounter, 45, 45);
+                    gameOver = true;
+                    remove(forwardButton);
+                    repaint();
+                } else {
+                    stepCounter -= 10;
+                    player.setBounds(100, stepCounter, 45, 45);
+                }
 
             }
         } else if (e.getSource() == restartButton) {
