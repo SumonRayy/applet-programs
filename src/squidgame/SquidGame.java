@@ -38,7 +38,7 @@ public class SquidGame extends Applet implements ActionListener, Runnable {
         bgSound = getAudioClip(getDocumentBase(), "assets/sounds/sg_theme.wav");
 
         player = new Label(playerName, Label.CENTER);
-        lightLabel = new Label(red, Label.CENTER);
+        lightLabel = new Label(green, Label.CENTER);
         lineLabel = new Label("");
 
         forwardButton = new Button("Forward");
@@ -63,7 +63,7 @@ public class SquidGame extends Applet implements ActionListener, Runnable {
         lineLabel.setBackground(Color.WHITE);
         lineLabel.setBounds(35, 250, 650, 2);
 
-        lightLabel.setBackground(redLight);
+        lightLabel.setBackground(greenLight);
         lightLabel.setFont(lightFont);
         lightLabel.setForeground(Color.WHITE);
         lightLabel.setBounds(450, 170, 200, 60);
