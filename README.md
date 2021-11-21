@@ -1,4 +1,4 @@
-# applet-programs
+# ☕ applet-programs
 
 ### This project contains some of my java applet projects.
 
